@@ -1,0 +1,56 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="style.css">
+    </head>
+  
+<body>
+    <h2 align="center">Breast Cancer- Mamogram Result Prediction Model</h2>
+   
+    <div class="login" style="width: 50%; margin: 0 auto;">
+       
+       <form action="{{ url_for('predict_datapoint')}}" method="post">
+        
+        
+        
+        <div class="mb-3" style="display: block; margin-bottom: 1rem;">
+            <label class="form-label">Radius mean</label>
+            <input class="form-control" type="text" name="radius_mean"
+                placeholder="Enter Radius mean" min='0' max='100' />
+        </div>
+        <div class="mb-3" style="display: block; margin-bottom: 1rem;">
+            <label class="form-label">compactness mean</label>
+            <input class="form-control" type="text" name="compactness_mean"
+                placeholder="Enter compactness mean" min='0' max='100' />
+        </div>
+        <div class="mb-3" style="display: block; margin-bottom: 1rem;">
+            <label class="form-label">Concave points mean</label>
+            <input class="form-control" type="text" name="concave_points_mean"
+                placeholder="Enter Concave points mean" min='0' max='100' />
+        </div>
+        <div class="mb-3" style="display: block; margin-bottom: 1rem;">
+            <label class="form-label">compactness worst</label>
+            <input class="form-control" type="text" name="compactness_worst"
+                placeholder="Enter compactness worst" min='0' max='100' />
+        </div>
+        <div class="mb-3" style="display: block; margin-bottom: 1rem;">
+            <label class="form-label">concavity worst</label>
+            <input class="form-control" type="text" name="concavity_worst"
+                placeholder="Enter concavity worst" min='0' max='100' />
+        </div>
+       
+        <div class="mb-3" style="display: block; margin-bottom: 1rem;">
+            <label class="form-label">concave points_worst</label>
+            <input class="form-control" type="text" name="concave_points_worst"
+                placeholder="Enter concave points worst" min='0' max='100' />
+        </div>
+        
+        
+        <div class="mb-3" style="display: block; margin-bottom: 1rem;">
+            <input class="btn btn-primary" type="submit" value="Predict Mammogrmm Result" required />
+        </div>
+    </form>
+    <h2>
+       Mammogram shows "{{results}} " cancer
+    </h2>
+   <body>
+</html>  
