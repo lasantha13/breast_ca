@@ -1,0 +1,6 @@
+sklearn-genetic
+Flask
+numpy
+pandas
+scikit-learn
+-e .
