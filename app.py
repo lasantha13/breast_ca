@@ -39,9 +39,9 @@ def predict_datapoint():
         results=predict_pipeline.predict(pred_df)
         print("after Prediction")
         if results[0] == 'B':
-            result = 'Benign'
+            result = 'Mammogram Results indicate Benign tumor'
         else:
-            result = 'Malignant'
+            result = 'Mammogram Results indicate Malignant tumor'
         return render_template('home.html',results=result)
     
 
