@@ -38,7 +38,11 @@ def predict_datapoint():
         print("Mid Prediction")
         results=predict_pipeline.predict(pred_df)
         print("after Prediction")
-        return render_template('home.html',results=results[0])
+        if results[0] == 'B':
+            result = 'Benign'
+        else:
+            result = 'Malignant'
+        return render_template('home.html',results=result)
     
 
 if __name__=="__main__":
