@@ -1,6 +1,8 @@
 from flask import Flask,request,render_template
 import numpy as np
 import pandas as pd
+import shap
+
 
 from sklearn.preprocessing import StandardScaler
 from src.pipeline.predict_pipeline import CustomData,PredictPipeline
@@ -42,8 +44,15 @@ def predict_datapoint():
             result = 'Mammogram Results indicate Benign tumor'
         else:
             result = 'Mammogram Results indicate Malignant tumor'
+
+        ##
+        create_shap = predict_pipeline.shap_chart(pred_df)
         return render_template('home.html',results=result)
     
+# add SHAP  graphs 
+@app.route('/shap')
+def shap_summary_plot():
+    explainer = shap.Explainer()
 
 if __name__=="__main__":
     app.run(debug=True,host="0.0.0.0")        

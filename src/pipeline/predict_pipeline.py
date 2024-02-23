@@ -3,6 +3,7 @@ import pandas as pd
 from src.exception import CustomException
 from src.utils import load_object
 import os
+import shap
 
 
 class PredictPipeline:
@@ -23,7 +24,22 @@ class PredictPipeline:
         
         except Exception as e:
             raise CustomException(e,sys)
-
+    ## SHAP creation funtion
+    def shap_chart(self,features):
+        try:
+            model_path=os.path.join("artifacts","model.pkl")
+            model=load_object(file_path=model_path)
+            preprocessor_path=os.path.join('artifacts','preprocessor.pkl')
+            preprocessor=load_object(file_path=preprocessor_path)
+            data_scaled=preprocessor.transform(features)
+            
+            explainer = shap.ExactExplainer(model)
+            shap_values = explainer.shap_values(data_scaled)
+            shap.summary_plot(shap_values, data_scaled, show=False)
+            plt.savefig('static/shap_summary_plot.png')
+            
+        except Exception as e:
+            raise CustomException(e,sys)
 
 
 class CustomData:
