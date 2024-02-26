@@ -15,7 +15,6 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-
 def add_sidebar():
     st.sidebar.header("Input Data")
     columns = ["radius_mean", "compactness_mean", "concave_points_mean",
@@ -37,11 +36,9 @@ def add_sidebar():
 
 pred_df = add_sidebar()
 
-
 def prediction():
-    
-    
     pred_df2 =pred_df.T
+    st.write("Input Values")
     st.write(pred_df2) 
     predict_pipeline=PredictPipeline()
     results=predict_pipeline.predict(pred_df)
@@ -55,7 +52,7 @@ def prediction():
         st.subheader(result)
        
 
-trigger = st.button("Prediction",on_click=prediction)
+
 features = ['radius_mean' ,'compactness_mean' ,'concave_points_mean' ,'compactness_worst' ,'concavity_worst' ,'concave_points_wors']
 train_data= pd.read_csv('New/x2_train.csv')
 
@@ -63,19 +60,28 @@ def scalded_value():
     #get train data 
     scaler = StandardScaler()
     train_scalded = scaler.fit_transform(train_data)
-    preprocessor = joblib.load("artifacts/preprocessor.pkl")
-    
-     
-    scalded_data = preprocessor.transform(pred_df)
-    scalded_data = scalded_data.reshape(1,-1)
     return train_scalded
 
-def shap_plot(scalded_values):
-    model = joblib.load("artifacts/model.pkl")
-    explainer = shap.Explainer(model, scalded_values, feature_names=features)
-    shap_values = explainer(scalded_values)
-    fig, ax = plt.subplots(figsize=(3,2))
-    shap.summary_plot(shap_values, scalded_values, feature_names=features)
-    st.pyplot(fig)
-scalded_values = scalded_value()
-shap_create =shap_plot(scalded_values)
+def shap_plot():
+    col1,col2 =st.columns([1,2])
+    with col1:
+        prediction()
+    with col2:
+        scalded_values = scalded_value()
+        model = joblib.load("artifacts/model.pkl")
+        explainer = shap.Explainer(model, scalded_values, feature_names=features)
+        shap_values = explainer(scalded_values)
+        fig, ax = plt.subplots(figsize=(3,2))
+        shap.summary_plot(shap_values, scalded_values, feature_names=features)
+        st.pyplot(fig)
+
+
+
+
+container1 = st.container()
+container2 = st.container()
+
+
+
+st.sidebar.button("Prediction",on_click=prediction)
+st.sidebar.button("SHAP Graph",on_click=shap_plot)
