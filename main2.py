@@ -4,6 +4,10 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from src.pipeline.predict_pipeline import CustomData,PredictPipeline
 import joblib
+import shap
+import streamlit_shap as st_shap
+import matplotlib.pyplot as plt
+
 st.set_page_config(
     page_title="Breast Cancer Predictor",
     page_icon=":female-doctor:",
@@ -31,25 +35,12 @@ def add_sidebar():
     
     return(input_df)
 
-preprocessor = joblib.load("artifacts/preprocessor.pkl")
-# pred_df = add_sidebar()
-# st.write(pred_df)
-
-# predict_pipeline=PredictPipeline()
-# results=predict_pipeline.predict(pred_df)
-# if results[0] == 'B':
-#     result = 'Mammogram Results indicate Benign tumor'
-#     st.write(result)
-    
-# else:
-#     result = 'Mammogram Results indicate Malignant tumor'
-#     st.write(result)
 pred_df = add_sidebar()
 
 
 def prediction():
     
-    preprocessor2 = joblib.load("artifacts/preprocessor.pkl")
+    
     pred_df2 =pred_df.T
     st.write(pred_df2) 
     predict_pipeline=PredictPipeline()
@@ -62,7 +53,29 @@ def prediction():
     else:
         result = 'Malignant tumor'
         st.subheader(result)
-        
+       
 
 trigger = st.button("Prediction",on_click=prediction)
+features = ['radius_mean' ,'compactness_mean' ,'concave_points_mean' ,'compactness_worst' ,'concavity_worst' ,'concave_points_wors']
+train_data= pd.read_csv('New/x2_train.csv')
 
+def scalded_value():
+    #get train data 
+    scaler = StandardScaler()
+    train_scalded = scaler.fit_transform(train_data)
+    preprocessor = joblib.load("artifacts/preprocessor.pkl")
+    
+     
+    scalded_data = preprocessor.transform(pred_df)
+    scalded_data = scalded_data.reshape(1,-1)
+    return train_scalded
+
+def shap_plot(scalded_values):
+    model = joblib.load("artifacts/model.pkl")
+    explainer = shap.Explainer(model, scalded_values, feature_names=features)
+    shap_values = explainer(scalded_values)
+    fig, ax = plt.subplots(figsize=(3,2))
+    shap.summary_plot(shap_values, scalded_values, feature_names=features)
+    st.pyplot(fig)
+scalded_values = scalded_value()
+shap_create =shap_plot(scalded_values)
