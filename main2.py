@@ -7,7 +7,9 @@ import joblib
 import shap
 import streamlit_shap as st_shap
 import matplotlib.pyplot as plt
-
+import lime
+import lime.lime_tabular
+#from lime.lime_tabular import LimeTabularExplainer
 st.set_page_config(
     page_title="Breast Cancer Predictor",
     page_icon=":female-doctor:",
@@ -62,26 +64,52 @@ def scalded_value():
     train_scalded = scaler.fit_transform(train_data)
     return train_scalded
 
+
+
+def lime_exp():
+    scalded_values = scalded_value()
+    explainer  =lime.lime_tabular.LimeTabularExplainer(scalded_values,
+                                                   feature_names=features,
+                                                   verbose=True,                                                   
+                                                   mode='classification',
+                                                   training_labels='diagnosis',
+                                                   class_names=['Benign','Malignant'])
+    
+    model = joblib.load("artifacts/model.pkl")
+    exp =explainer.explain_instance(scalded_values[6],model.predict_proba)
+   #exp = explainer.explain_instance(pred_df.iloc[instance_index], model.predict_proba, num_features=len(feature_names))
+    st.write("LIME Visuals--------")
+    exp_image = exp.as_pyplot_figure()
+    exp_image.canvas.draw()
+    image_data = np.frombuffer(exp_image.canvas.tostring_rgb(), dtype=np.uint8)
+    image_data = image_data.reshape(exp_image.canvas.get_width_height()[::-1] + (3,))
+
+    st.image(image_data, caption='LIME Explanation', use_column_width=True)
+
+
+
 def shap_plot():
-    col1,col2 =st.columns([1,2])
-    with col1:
-        prediction()
-    with col2:
-        scalded_values = scalded_value()
-        model = joblib.load("artifacts/model.pkl")
-        explainer = shap.Explainer(model, scalded_values, feature_names=features)
-        shap_values = explainer(scalded_values)
-        fig, ax = plt.subplots(figsize=(3,2))
-        shap.summary_plot(shap_values, scalded_values, feature_names=features)
-        st.pyplot(fig)
-
-
-
-
-container1 = st.container()
-container2 = st.container()
+    cotainer1 =st.container()
+    with cotainer1:
+            prediction()
+    cotainer2 =st.container()
+    with cotainer1:
+        col1,col2 =st.columns([1,1])
+        with col1:
+            scalded_values = scalded_value()
+            model = joblib.load("artifacts/model.pkl")
+            explainer = shap.Explainer(model, scalded_values, feature_names=features)
+            shap_values = explainer(scalded_values)
+            fig, ax = plt.subplots(figsize=(3,2))
+            shap.summary_plot(shap_values, scalded_values, feature_names=features)
+            st.pyplot(fig)
+            st.write("LIME")
+        
+        with col2:
+            lime_exp()
 
 
 
 st.sidebar.button("Prediction",on_click=prediction)
 st.sidebar.button("SHAP Graph",on_click=shap_plot)
+st.sidebar.button("LIME Graph",on_click=lime_exp)
