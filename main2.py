@@ -9,6 +9,8 @@ import streamlit_shap as st_shap
 import matplotlib.pyplot as plt
 import lime
 import lime.lime_tabular
+import shapash as sh
+from shapash.explainer.smart_explainer import SmartExplainer
 #from lime.lime_tabular import LimeTabularExplainer
 st.set_page_config(
     page_title="Breast Cancer Predictor",
@@ -63,9 +65,6 @@ def scalded_value():
     scaler = StandardScaler()
     train_scalded = scaler.fit_transform(train_data)
     return train_scalded
-
-
-
 def lime_exp():
     scalded_values = scalded_value()
     explainer  =lime.lime_tabular.LimeTabularExplainer(scalded_values,
@@ -85,9 +84,6 @@ def lime_exp():
     image_data = image_data.reshape(exp_image.canvas.get_width_height()[::-1] + (3,))
 
     st.image(image_data, caption='LIME Explanation', use_column_width=True)
-
-
-
 def shap_plot():
     cotainer1 =st.container()
     with cotainer1:
@@ -108,8 +104,59 @@ def shap_plot():
         with col2:
             lime_exp()
 
+def shap_barplot():
+    cotainer1 =st.container()
+    with cotainer1:
+            prediction()
+    cotainer2 =st.container()
+    with cotainer1:
+        col1,col2 =st.columns([1,1])
+        with col1:
+            scalded_values = scalded_value()
+            model = joblib.load("artifacts/model.pkl")
+            explainer = shap.Explainer(model, scalded_values, feature_names=features)
+            shap_values = explainer(scalded_values)
+            fig, ax = plt.subplots(figsize=(3,2))
+            shap.summary_plot(shap_values, scalded_values,plot_type="bar", feature_names=features)
+            st.pyplot(fig)
+            st.write("LIME")
+        
+        with col2:
+            # Load the model
+            # Create explainer object using the pre-scaled data
+            # Calculate Shap values
+            # Create the waterfall plot using shap.waterfall
+            fig, ax = plt.subplots(figsize=(10, 5))  # Adjust figure size as needed
+            scalded_df = pd.DataFrame(scalded_values)
+            first_instance = scalded_values[0]
+            shap.waterfall_plot(shap_values[0], scalded_df.iloc[0])  # Use first instance for demonstration
 
+            # Display the plot in Streamlit
+            st.pyplot(fig)
+##SHAPASH
+def shapash_create():
+    scalded_values = scalded_value()
+    model1 = joblib.load("artifacts/model.pkl")
+    # Declare SmartExplainer
+    xpl = SmartExplainer(model1)
 
+    # Compile SmartExplainer with your model
+    xpl.compile(x=scalded_values, model=model1)
+
+    
+
+    
+    # Streamlit app
+    st.title('Shapash Report')
+
+    # Select the index you want to explain
+    index_to_explain = st.selectbox('Select index to explain',scalded_values.index)
+
+    # Display the local explanation
+    local_plot = xpl.plot.local_plot(index=index_to_explain, show=False)
+    st.pyplot(local_plot)
+
+shap_barplot()
 st.sidebar.button("Prediction",on_click=prediction)
 st.sidebar.button("SHAP Graph",on_click=shap_plot)
 st.sidebar.button("LIME Graph",on_click=lime_exp)
