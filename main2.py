@@ -64,10 +64,16 @@ def scalded_value():
     #get train data 
     scaler = StandardScaler()
     train_scalded = scaler.fit_transform(train_data)
-    return train_scalded
+    input_scalded  = scaler.transform(pred_df)
+    return(train_scalded,input_scalded)
+# def scalded_input():
+#     scaler = StandardScaler()
+#     train_scalded = scaler.fit_transform(train_data)
+#     input_scalded  = scaler.transform(pred_df)
+#     return(train_scalded,input_scalded)
 def lime_exp():
-    scalded_values = scalded_value()
-    explainer  =lime.lime_tabular.LimeTabularExplainer(scalded_values,
+    train_scalded,inputs_scalded = scalded_value()
+    explainer  =lime.lime_tabular.LimeTabularExplainer(train_scalded,
                                                    feature_names=features,
                                                    verbose=True,                                                   
                                                    mode='classification',
@@ -75,7 +81,7 @@ def lime_exp():
                                                    class_names=['Benign','Malignant'])
     
     model = joblib.load("artifacts/model.pkl")
-    exp =explainer.explain_instance(scalded_values[6],model.predict_proba)
+    exp =explainer.explain_instance(train_scalded[6],model.predict_proba)
    #exp = explainer.explain_instance(pred_df.iloc[instance_index], model.predict_proba, num_features=len(feature_names))
     st.write("LIME Visuals--------")
     exp_image = exp.as_pyplot_figure()
@@ -92,12 +98,12 @@ def shap_plot():
     with cotainer1:
         col1,col2 =st.columns([1,1])
         with col1:
-            scalded_values = scalded_value()
+            train_scalded,inputs_scalded = scalded_value()
             model = joblib.load("artifacts/model.pkl")
-            explainer = shap.Explainer(model, scalded_values, feature_names=features)
-            shap_values = explainer(scalded_values)
+            explainer = shap.Explainer(model, train_scalded, feature_names=features)
+            shap_values = explainer(train_scalded)
             fig, ax = plt.subplots(figsize=(3,2))
-            shap.summary_plot(shap_values, scalded_values, feature_names=features)
+            shap.summary_plot(shap_values, train_scalded, feature_names=features)
             st.pyplot(fig)
             st.write("LIME")
         
@@ -110,16 +116,17 @@ def shap_barplot():
             prediction()
     cotainer2 =st.container()
     with cotainer1:
-        col1,col2 =st.columns([1,1])
+        col1,col2 =st.columns([2,3])
         with col1:
-            scalded_values = scalded_value()
+            train_scalded,inputs_scalded = scalded_value()
             model = joblib.load("artifacts/model.pkl")
-            explainer = shap.Explainer(model, scalded_values, feature_names=features)
-            shap_values = explainer(scalded_values)
+            explainer = shap.Explainer(model, train_scalded, feature_names=features)
+            shap_values = explainer(train_scalded)
+            
             fig, ax = plt.subplots(figsize=(3,2))
-            shap.summary_plot(shap_values, scalded_values,plot_type="bar", feature_names=features)
+            shap.summary_plot(shap_values, train_scalded,plot_type="bar", feature_names=features)
             st.pyplot(fig)
-            st.write("LIME")
+            
         
         with col2:
             # Load the model
@@ -127,12 +134,12 @@ def shap_barplot():
             # Calculate Shap values
             # Create the waterfall plot using shap.waterfall
             fig, ax = plt.subplots(figsize=(10, 5))  # Adjust figure size as needed
-            scalded_df = pd.DataFrame(scalded_values)
-            first_instance = scalded_values[0]
-            shap.waterfall_plot(shap_values[0], scalded_df.iloc[0])  # Use first instance for demonstration
-
+            shap_values2 = explainer(inputs_scalded)
             # Display the plot in Streamlit
+            shap.waterfall_plot(shap_values2[0])
             st.pyplot(fig)
+            
+            
 ##SHAPASH
 def shapash_create():
     scalded_values = scalded_value()
