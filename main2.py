@@ -53,7 +53,7 @@ def prediction():
     
     else:
         result = 'Malignant tumor'
-        st.success(result)
+        st.error(result)
        
 
 
