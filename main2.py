@@ -42,18 +42,18 @@ pred_df = add_sidebar()
 
 def prediction():
     pred_df2 =pred_df.T
-    st.write("Input Values")
+    st.write("Patient Mammogram Results")
     st.write(pred_df2) 
     predict_pipeline=PredictPipeline()
     results=predict_pipeline.predict(pred_df)
-    st.write('Mammogram Results indicate : ')
+    st.subheader('Mammogram Results indicate : ')
     if results[0] == 'B':
         result = 'Benign tumor'
-        st.subheader(result)
+        st.success(result)
     
     else:
         result = 'Malignant tumor'
-        st.subheader(result)
+        st.success(result)
        
 
 
@@ -91,13 +91,17 @@ def lime_exp():
 
     st.image(image_data, caption='LIME Explanation', use_column_width=True)
 def shap_plot():
-    cotainer1 =st.container()
-    with cotainer1:
-            prediction()
-    cotainer2 =st.container()
-    with cotainer1:
-        col1,col2 =st.columns([1,1])
-        with col1:
+    st.subheader("Prediction model - Feature Importance")
+    col1,col2 =st.columns([1,1])
+    with col1:
+            train_scalded,inputs_scalded = scalded_value()
+            model = joblib.load("artifacts/model.pkl")
+            explainer = shap.Explainer(model, train_scalded, feature_names=features)
+            shap_values = explainer(train_scalded)
+            fig, ax = plt.subplots(figsize=(3,2))
+            shap.summary_plot(shap_values, train_scalded, plot_type="bar",feature_names=features)
+            st.pyplot(fig)
+    with col2:
             train_scalded,inputs_scalded = scalded_value()
             model = joblib.load("artifacts/model.pkl")
             explainer = shap.Explainer(model, train_scalded, feature_names=features)
@@ -105,40 +109,33 @@ def shap_plot():
             fig, ax = plt.subplots(figsize=(3,2))
             shap.summary_plot(shap_values, train_scalded, feature_names=features)
             st.pyplot(fig)
-            st.write("LIME")
-        
-        with col2:
-            lime_exp()
+            
 
-def shap_barplot():
+def shap_waterfallplot():
     cotainer1 =st.container()
-    with cotainer1:
-            prediction()
-    cotainer2 =st.container()
     with cotainer1:
         col1,col2 =st.columns([2,3])
         with col1:
-            train_scalded,inputs_scalded = scalded_value()
-            model = joblib.load("artifacts/model.pkl")
-            explainer = shap.Explainer(model, train_scalded, feature_names=features)
-            shap_values = explainer(train_scalded)
-            
-            fig, ax = plt.subplots(figsize=(3,2))
-            shap.summary_plot(shap_values, train_scalded,plot_type="bar", feature_names=features)
-            st.pyplot(fig)
-            
+            prediction() 
         
         with col2:
             # Load the model
             # Create explainer object using the pre-scaled data
             # Calculate Shap values
             # Create the waterfall plot using shap.waterfall
+            train_scalded,inputs_scalded = scalded_value()
+            model = joblib.load("artifacts/model.pkl")
             fig, ax = plt.subplots(figsize=(10, 5))  # Adjust figure size as needed
+
+            explainer = shap.Explainer(model, train_scalded, feature_names=features)
             shap_values2 = explainer(inputs_scalded)
             # Display the plot in Streamlit
             shap.waterfall_plot(shap_values2[0])
             st.pyplot(fig)
-            
+    cotainer2 =st.container()
+    with cotainer2:
+        st.write("_____________________________________________________________________________________________________________")
+                  
             
 ##SHAPASH
 def shapash_create():
@@ -162,8 +159,8 @@ def shapash_create():
     # Display the local explanation
     local_plot = xpl.plot.local_plot(index=index_to_explain, show=False)
     st.pyplot(local_plot)
-
-shap_barplot()
+shap_plot()
+shap_waterfallplot()
 st.sidebar.button("Prediction",on_click=prediction)
 st.sidebar.button("SHAP Graph",on_click=shap_plot)
 st.sidebar.button("LIME Graph",on_click=lime_exp)
