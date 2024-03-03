@@ -20,7 +20,7 @@ st.set_page_config(
 )
 
 def add_sidebar():
-    st.sidebar.header("Input Data")
+    st.sidebar.header("Breast Mass: Risk Prediction")
     columns = ["radius_mean", "compactness_mean", "concave_points_mean",
            "compactness_worst", "concavity_worst", "concave_points_worst"]
     radius_mean = st.sidebar.slider("Radiou mean",0.01,10.00)
@@ -42,7 +42,7 @@ pred_df = add_sidebar()
 
 def prediction():
     pred_df2 =pred_df.T
-    st.write("Patient Mammogram Results")
+    st.write("Predicted Result : ")
     st.write(pred_df2) 
     predict_pipeline=PredictPipeline()
     results=predict_pipeline.predict(pred_df)
