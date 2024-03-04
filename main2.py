@@ -46,7 +46,7 @@ def prediction():
     st.write(pred_df2) 
     predict_pipeline=PredictPipeline()
     results=predict_pipeline.predict(pred_df)
-    st.subheader('Mammogram Results indicate : ')
+    st.subheader('Predicted Result : ')
     if results[0] == 'B':
         result = 'Benign tumor'
         st.success(result)
@@ -159,8 +159,16 @@ def shapash_create():
     # Display the local explanation
     local_plot = xpl.plot.local_plot(index=index_to_explain, show=False)
     st.pyplot(local_plot)
-shap_plot()
-shap_waterfallplot()
-st.sidebar.button("Prediction",on_click=prediction)
-st.sidebar.button("SHAP Graph",on_click=shap_plot)
-st.sidebar.button("LIME Graph",on_click=lime_exp)
+tab1,tab2 = st.tabs(["Basic model","With XAI"])
+with tab1:
+    prediction() 
+with tab2:
+    shap_plot()
+    shap_waterfallplot()
+
+
+
+# st.sidebar.button("Prediction",on_click=prediction)
+# st.sidebar.button("SHAP Graph",on_click=shap_plot)
+# st.sidebar.button("LIME Graph",on_click=lime_exp)
+
