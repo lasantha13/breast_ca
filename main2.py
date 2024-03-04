@@ -42,7 +42,7 @@ pred_df = add_sidebar()
 
 def prediction():
     pred_df2 =pred_df.T
-    st.write("Predicted Result : ")
+    st.subheader("Investigation (FNAC) Results")
     st.write(pred_df2) 
     predict_pipeline=PredictPipeline()
     results=predict_pipeline.predict(pred_df)
@@ -91,7 +91,7 @@ def lime_exp():
 
     st.image(image_data, caption='LIME Explanation', use_column_width=True)
 def shap_plot():
-    st.subheader("Prediction model - Feature Importance")
+    st.subheader("Prediction model - Feature Importance(Global Explanation)")
     col1,col2 =st.columns([1,1])
     with col1:
             train_scalded,inputs_scalded = scalded_value()
@@ -123,7 +123,9 @@ def shap_waterfallplot():
             # Create explainer object using the pre-scaled data
             # Calculate Shap values
             # Create the waterfall plot using shap.waterfall
+            st.subheader("Local Explanation")
             train_scalded,inputs_scalded = scalded_value()
+
             model = joblib.load("artifacts/model.pkl")
             fig, ax = plt.subplots(figsize=(10, 5))  # Adjust figure size as needed
 
